@@ -1,0 +1,118 @@
+---
+title: "Data Modification"
+author: "Roghan"
+date: "5 April 2023"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(GGally)
+library(ggplot2)
+```
+
+***Read Data
+
+```{r}
+df <- read.csv("./preprocess.csv")
+df %>% head
+```
+
+***Data modification for model creation
+
+```{r}
+head(df)
+```
+
+```{r}
+lab= c("1-3 ","3-6","6-9","9-12","12+")
+val= c(0,1,2,3,4)
+
+
+for (x in 1:length(lab)){
+  df$btime[df$btime==lab[x]]<-val[x]
+  df$atime[df$atime==lab[x]]<-val[x]
+}
+
+df
+```
+```{r}
+cols= colnames(df)[8:19]
+cols
+```
+```{r}
+i=1
+c=1
+
+newcols= c("time", "devstudy", "conc", "bed", "affbed", "tire")
+
+while(i!=13){
+  final= c()
+  
+  for (row in 1:nrow(df)) {
+    v1 <- as.numeric(df[row, cols[i]])
+    v2 <- as.numeric(df[row, cols[i+1]])
+    
+    if (i==7){
+      final= append(final, v1-v2)
+    }
+    else{
+      final= append(final, v2-v1)
+    }
+  }
+
+  i= i+2
+  df[,newcols[c]] <- final
+  c= c+1
+}
+```
+```{r}
+df
+```
+```{r}
+for(x in colnames(df)[8:ncol(df)]){
+  df[,x]= as.numeric(df[,x])
+}
+
+```
+
+```{r}
+newdf= data.frame(devuse.score= df$time + df$devstudy + df$conc)
+newdf= cbind(newdf, sleep.score= df$bed + df$affbed + df$tire)
+newdf= cbind(newdf, social.score= df$socdist + df$isolate + df$personality + df$lazy)
+newdf= cbind(newdf, psych.score= df$boredom + df$psycho + df$afford + df$unhealthy + df$covidstress)
+newdf= cbind(newdf, acad.score= df$devicegpa + df$assgn + df$f2f + df$quiz)
+
+```
+```{r}
+newdf
+```
+1. devuse.score: 
+      Higher the score -> More usage time, Negatively affected health
+      Lower the score -> Lesser usage time, Positive/No affect in health
+
+2. sleep.score:
+      Higher the score -> Lesser sleep time, Negatively affected health
+      Lower the score -> Relatively More sleep time, Positive/No affect in health
+
+3. social.score:
+      Higher the score -> Lesser interaction with people, Negatively affected social health
+      Lower the score -> Relatively More interaction with other people, Positive/No affect in social health
+
+4. psych.score:
+      Higher the score -> Students psychologically affected, Negatively affects psych health
+      Lower the score -> Relatively less psychologically affected, Positively/No affects psych health 
+
+5. acad.score:
+      Higher the score -> Student not interested to study, Negatively affected grades
+      Lower the score -> Student relatively more inclined to study, Positive/No affect in grades
+
+```{r}
+ggpairs(newdf)
+```
+
+```{r}
+write.csv(newdf, "C:/Users/rogha/OneDrive/Documents/MS WORD FILES/EDA/Project/Review-2/parameters.csv", row.names=FALSE)
+```
+

@@ -1,0 +1,142 @@
+---
+title: "K-Means Clustering"
+author: "Roghan"
+date: "5 April 2023"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(GGally)
+library(ggplot2)
+```
+
+***Read Data
+
+```{r}
+df <- read.csv("./preprocess.csv")
+df %>% head
+```
+
+```{r}
+newdf <- read.csv("./parameters.csv")
+newdf %>% head
+```
+
+```{r}
+library(factoextra)
+library(ggfortify)
+```
+
+```{r}
+clustering= data.frame(cgpa= df$cgpa)
+names= c("c1","c2", "c3", "c4", "c5")
+
+for (i in c(1:5)){
+  kmean2 <- kmeans(newdf, i)
+  clustering[,names[i]]= kmean2$cluster
+}
+```
+
+```{r}
+clustering
+```
+
+```{r}
+clustering %>%
+  ggplot(aes(x=cgpa, fill=as.character(c3))) +
+  geom_bar(position="dodge") +
+  theme_bw()
+```
+Clustering by 3, gives us a clear idea as to how the academic performance varies according to cluster.
+
+```{r}
+prcomp(newdf)
+```
+
+```{r}
+kmean <- kmeans(newdf, 3)
+kmean$centers
+```
+```{r}
+store$class= kmean$cluster
+```
+
+
+```{r}
+autoplot(kmean, newdf, frame = TRUE)
+```
+Cluster-1: Positively Impact in Health and Positively impacts Academics
+Cluster-2: Negatively Impact in Health and Neutral impact Academics
+Cluster-3: Neutral Impact in Health and Negatively impacts Academics
+
+***Adding class label to main dataframe
+
+```{r}
+df= df[, c(1:7)]
+df
+```
+```{r}
+df= cbind(df, newdf)
+```
+
+```{r}
+df$class= kmean$cluster
+```
+```{r}
+df= df[, c(2:ncol(df))]
+df
+```
+
+***Encoding
+
+```{r}
+lab= c("Female","Male")
+val= c(0,1)
+
+
+for (x in 1:length(lab)){
+  df$sex[df$sex==lab[x]]<-val[x]
+}
+
+lab= c("First/Freshman","Second/ Sophomore", "Third/Junior", "Fourth/Senior", "Other")
+val= c(0,1,2,3,4)
+
+
+for (x in 1:length(lab)){
+  df$yr[df$yr==lab[x]]<-val[x]
+}
+
+lab= c("18-24","25-30", "+30")
+val= c(0,1,2)
+
+
+for (x in 1:length(lab)){
+  df$age[df$age==lab[x]]<-val[x]
+}
+
+lab= c("60-69","70-79", "80-89", "+90")
+val= c(0,1,2,3)
+
+
+for (x in 1:length(lab)){
+  df$cgpa[df$cgpa==lab[x]]<-val[x]
+}
+
+lab= c("Laptop", "Mobile phone", "I pad/ Tablet", "Personal Computer", "Other")
+val= c(0,1,2,3,4)
+
+
+for (x in 1:length(lab)){
+  df$bdevice[df$bdevice==lab[x]]<-val[x]
+  df$adevice[df$adevice==lab[x]]<-val[x]
+}
+
+
+df
+```
+
+```{r}
+write.csv(df, "C:/Users/rogha/OneDrive/Documents/MS WORD FILES/EDA/Project/Review-2/kmeans.csv", row.names=FALSE)
+```
